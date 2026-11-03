@@ -1,3 +1,4 @@
+
 # Harry Potter RAG Service
 
 A two-stage Retrieval-Augmented Generation (RAG) backend built with FastAPI, LangGraph, ChromaDB, and Ollama. The service retrieves relevant text from Harry Potter books and generates answers using a local LLM.
@@ -24,8 +25,10 @@ A two-stage Retrieval-Augmented Generation (RAG) backend built with FastAPI, Lan
    - Instructs the model to use only the retrieved passages.
 
 5. Step 5: LangGraph Workflow
-   - Uses LangGraph to connect the retrieval and generation steps.
-   - Stores the question, retrieved passages, and answer in a shared state.
+   - Uses LangGraph to manage retrieval, answer generation, and question rewriting.
+   - Stores the question, retrieved passages, answer, and rewrite count in a shared state.
+   - If the LLM responds with "I don't know", it rewrites the question using Ollama and runs retrieval and generation again.
+   - Limits rewriting to one attempt to avoid an infinite loop.
 
 ---
 
@@ -44,7 +47,7 @@ A two-stage Retrieval-Augmented Generation (RAG) backend built with FastAPI, Lan
 ## Project Structure
 
 - server.py: FastAPI application and API endpoint
-- agent.py: LangGraph workflow and answer generation
+- agent.py: LangGraph workflow, question rewriting, and answer generation
 - retrieval.py: Dense retrieval, reranking, and context expansion
 - index_books.ipynb: PDF processing, chunking, and vector database preparation
 - requirements.txt: Python dependencies
@@ -58,8 +61,8 @@ A two-stage Retrieval-Augmented Generation (RAG) backend built with FastAPI, Lan
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/prongs394/harry-potter-rag.git
-   cd harry-potter-rag
+   git clone https://github.com/prongs394/harry-potter-langgraph-rag.git
+   cd harry-potter-langgraph-rag
    ```
 
 2. Install dependencies:
@@ -91,6 +94,8 @@ A two-stage Retrieval-Augmented Generation (RAG) backend built with FastAPI, Lan
    python -m uvicorn server:app --host 127.0.0.1 --port 8000
    ```
 
+   To access the API from another device on the same Wi-Fi, use `--host 0.0.0.0` and open `http://YOUR_LOCAL_IP:8000/docs` on that device.
+
 ---
 
 ## API Usage
@@ -119,5 +124,6 @@ A two-stage Retrieval-Augmented Generation (RAG) backend built with FastAPI, Lan
 ## Limitations
 
 - The local LLM may give incorrect answers even when the correct information is retrieved.
+- Question rewriting is only triggered when the LLM responds with "I don't know". It cannot detect every incorrect answer.
 - The vector database must be built locally before running the service.
 - Answer speed depends on the available hardware.
