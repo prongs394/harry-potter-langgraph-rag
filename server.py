@@ -24,7 +24,8 @@ def chat(request: ChatRequest):
     result = graph.invoke({
         "question": request.question,
         "chunks": [],
-        "answer": ""
+        "answer": "",
+        "rewrite_count": 0
     })
 
     return ChatResponse(answer=result["answer"])
